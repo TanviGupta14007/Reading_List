@@ -4,6 +4,15 @@ import type { Book, ReadingStatus } from '@/types';
 const STORAGE_KEY = 'reading-list-books';
 const MAX_TITLE_LENGTH = 60;
 
+function normalizeTitle(title: string): string {
+  return title
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\.+$/g, '')
+    .trim()
+    .toLowerCase();
+}
+
 function loadBooks(): Book[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -29,8 +38,8 @@ export function useReadingList() {
     if (trimmed.length > MAX_TITLE_LENGTH) {
       return 'Book title must be 60 characters or fewer.';
     }
-    const normalized = trimmed.toLowerCase();
-    if (books.some((b) => b.title.trim().toLowerCase() === normalized)) {
+    const normalized = normalizeTitle(trimmed);
+    if (books.some((b) => normalizeTitle(b.title) === normalized)) {
       return 'This book is already in your reading list.';
     }
     const book: Book = {
