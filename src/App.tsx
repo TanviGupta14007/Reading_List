@@ -47,7 +47,6 @@ function App() {
 
         <div className="mb-4">
           <AddBookForm
-            existingTitles={books.map((b) => b.title)}
             onAdd={addBook}
           />
         </div>

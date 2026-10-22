@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Book, ReadingStatus } from '@/types';
 
 const STORAGE_KEY = 'reading-list-books';
+const MAX_TITLE_LENGTH = 60;
 
 function loadBooks(): Book[] {
   try {
@@ -22,9 +23,16 @@ export function useReadingList() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
   }, [books]);
 
-  const addBook = (title: string, status: ReadingStatus) => {
+  const addBook = (title: string, status: ReadingStatus): string | null => {
     const trimmed = title.trim();
-    if (!trimmed) return;
+    if (!trimmed) return null;
+    if (trimmed.length > MAX_TITLE_LENGTH) {
+      return 'Book title must be 60 characters or fewer.';
+    }
+    const normalized = trimmed.toLowerCase();
+    if (books.some((b) => b.title.trim().toLowerCase() === normalized)) {
+      return 'This book is already in your reading list.';
+    }
     const book: Book = {
       id: crypto.randomUUID(),
       title: trimmed,
@@ -32,6 +40,7 @@ export function useReadingList() {
       createdAt: Date.now(),
     };
     setBooks((prev) => [book, ...prev]);
+    return null;
   };
 
   const updateStatus = (id: string, status: ReadingStatus) => {

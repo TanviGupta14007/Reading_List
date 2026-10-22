@@ -5,39 +5,28 @@ import { STATUS_LABELS, STATUS_ORDER, type ReadingStatus } from '@/types';
 const MAX_TITLE_LENGTH = 60;
 
 interface AddBookFormProps {
-  existingTitles: string[];
-  onAdd: (title: string, status: ReadingStatus) => void;
+  onAdd: (title: string, status: ReadingStatus) => string | null;
 }
 
-export function AddBookForm({ existingTitles, onAdd }: AddBookFormProps) {
+export function AddBookForm({ onAdd }: AddBookFormProps) {
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState<ReadingStatus>('want-to-read');
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState('');
 
-  const validate = (value: string): string | null => {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    if (trimmed.length > MAX_TITLE_LENGTH) {
-      return 'Book title must be 60 characters or fewer.';
-    }
-    const normalized = trimmed.toLowerCase().replace(/\s+/g, ' ');
-    if (existingTitles.some((t) => t.toLowerCase().replace(/\s+/g, ' ') === normalized)) {
-      return 'This book is already in your reading list.';
-    }
-    return null;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
-    const validationError = validate(title);
+    if (trimmed.length > MAX_TITLE_LENGTH) {
+      setError('Book title must be 60 characters or fewer.');
+      return;
+    }
+    const validationError = onAdd(trimmed, status);
     if (validationError) {
       setError(validationError);
       return;
     }
-    onAdd(trimmed, status);
     setTitle('');
     setStatus('want-to-read');
     setError('');
